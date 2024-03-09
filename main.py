@@ -1,6 +1,5 @@
 import webbrowser
 import os
-from wsgiref import validate
 from discord_webhook import DiscordWebhook
 from dotenv import load_dotenv
 import pyautogui
@@ -9,6 +8,11 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tess
 import re
 import time
 import cv2
+
+class potentialNextNumber:
+    def __init__(self, number, counter):
+        self.number = number
+        self.counter = counter
 
 def validateText(inputText):
     validCharacters = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ -'"
@@ -30,6 +34,7 @@ def is_in_range(number, lower_bound, upper_bound):
     return lower_bound <= number <= upper_bound
 
 lastRecordedNumber = -1
+maybeNextNum = None
 time.sleep(10)
 
 if __name__ == "__main__":
@@ -38,8 +43,10 @@ if __name__ == "__main__":
     
 
     #Create the Webhook to communicate with the Discord Server
-    webhook = DiscordWebhook(url=os.environ['DISCORD_WEBHOOK'],content="Testing")
-    response = webhook.execute()
+    #webhook = DiscordWebhook(url=os.environ['DISCORD_WEBHOOK'],content="Testing")
+    #response = webhook.execute()
+
+
     while(True):
         pyautogui.screenshot("screenshot.png",region=(960,14,951,46))
         #pyautogui.screenshot("screenshot.png",region=(350,950,1070,85))
@@ -48,13 +55,22 @@ if __name__ == "__main__":
         print(text)
         validatedText = validateText(text)
 
+        
         if validatedText:
             validatedNumber = int(validatedText[:3])
-            if lastRecordedNumber != validatedNumber and ((lastRecordedNumber == -1) or is_in_range(validatedNumber, lastRecordedNumber - 5, lastRecordedNumber + 5)):
-                lastRecordedNumber = validatedNumber
-                webhook = DiscordWebhook(url=os.environ['DISCORD_WEBHOOK'],content=str(validatedNumber))
-                response = webhook.execute()
-                currentNumber = validatedNumber
+            if lastRecordedNumber != validatedNumber and (lastRecordedNumber == -1):
+                if(maybeNextNum == None or maybeNextNum.number != validatedNumber):
+                    maybeNextNum = potentialNextNumber(validatedNumber, 1)
+                elif (maybeNextNum.number == validatedNumber):
+                    maybeNextNum.counter += 1
+                    if maybeNextNum.counter >= 5:
+                        lastRecordedNumber = validatedNumber
+                        webhook = DiscordWebhook(url=os.environ['DISCORD_WEBHOOK_URL'],content=str(validatedNumber))
+                        response = webhook.execute()
+                        print("NUMBER IS: " + str(validatedNumber))
+                        currentNumber = validatedNumber
+                        maybeNextNum = None
+
             elif lastRecordedNumber == validatedNumber:
                 print("Currently on the same number")
             else:
