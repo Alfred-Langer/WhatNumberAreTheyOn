@@ -30,6 +30,7 @@ def is_in_range(number, lower_bound, upper_bound):
     return lower_bound <= number <= upper_bound
 
 lastRecordedNumber = -1
+time.sleep(10)
 
 if __name__ == "__main__":
     #Load Environment variables from the .env file
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     webhook = DiscordWebhook(url=os.environ['DISCORD_WEBHOOK'],content="Testing")
     response = webhook.execute()
     while(True):
-        pyautogui.screenshot("screenshot.png",region=(930,10,950,50))
+        pyautogui.screenshot("screenshot.png",region=(960,14,951,46))
         #pyautogui.screenshot("screenshot.png",region=(350,950,1070,85))
         img = cv2.imread("screenshot.png")
         text = pytesseract.image_to_string(img)
